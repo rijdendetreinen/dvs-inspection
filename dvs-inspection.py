@@ -72,14 +72,15 @@ counter_late = {}
 with open(sys.argv[1], 'r') as f:
     for line in f:
         dvs_details = get_dvs_details(line)
+
+        if dvs_details[0] == "0":
+            # Negeer PPV bijmenging voor nu
+            continue
         
         if first_timestamp is None:
             first_timestamp = dvs_details[2]
             timestamp_th = first_timestamp + window_delta
         
-        if dvs_details[2] < timestamp_th:
-            continue
-
         vertrekdatum = dvs_details[6].strftime('%Y-%m-%d')
         rit_stat_id = dvs_details[5] + "_" + dvs_details[4] + "_" + vertrekdatum
 
@@ -97,6 +98,11 @@ with open(sys.argv[1], 'r') as f:
             # Add 
             first_seen[rit_stat_id] = dvs_details[9]
             counter_service[vertrekdatum] += 1
+
+            if dvs_details[2] < timestamp_th:
+                # Don't care over te late meldingen
+                # Valt nog binnen opstarttijd
+                continue
 
             if dvs_details[9] < marge_min or dvs_details[9] > marge_max:
                 # Eerste bericht voor deze rit buiten marge
